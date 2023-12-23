@@ -1,0 +1,199 @@
+---
+title: "stat630_project_group5"
+author: "Group5"
+date: "2022-12-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+# import data
+olympic <- read_csv("winter_olympic_study.csv")
+```
+
+```{r}
+dim(data)
+head(olympic)
+```
+
+```{r}
+sum(is.na(olympic))
+```
+
+### EDA
+
+```{r}
+summary(olympic)
+```
+
+```{r}
+mean(olympic$Total_Points)
+sd(olympic$Total_Points)
+mean(olympic$GDP)
+sd(olympic$GDP)
+```
+
+```{r}
+hist(olympic$Total_Points)
+```
+
+```{r}
+olympic %>%
+  filter(year == 2018) %>% 
+  select(country_name, Total_Points) %>% 
+  arrange(desc(Total_Points)) %>%
+  head(10)
+```
+
+```{r}
+hist(olympic$GDP)
+```
+
+```{r}
+olympic %>%
+  filter(year == 2018) %>% 
+  select(country_name, GDP) %>% 
+  arrange(desc(GDP)) %>%
+  head(10)
+```
+
+### Transformation
+
+```{r}
+olympic$loggdp <- log(olympic$GDP)
+```
+
+```{r}
+plot(olympic$Total_Points ~ olympic$GDP)
+plot(olympic$Total_Points ~ olympic$loggdp)
+```
+
+```{r}
+mean(olympic$loggdp)
+sd(olympic$loggdp)
+```
+
+### Analysis 1
+### Check assumptions
+
+#### 1. Linearity
+
+```{r}
+# 1. Linearity
+ggplot(olympic, aes(x = log(GDP), y = Total_Points)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+#### 2. Indepence
+
+Each country is independent of one another.We assume that all the country's GDP and number of medals are independent.
+
+#### 3. Equal Variance
+
+```{r}
+model1 <- lm(Total_Points ~ log(GDP), data = olympic)
+
+plot(resid(model1) ~ fitted(model1), main = "Residuals vs. Fitted")  
+abline(h = 0, col = "red")
+```
+
+#### 4. Normality
+
+```{r}
+qqnorm(resid(model1))
+qqline(resid(model1), col = "red")
+```
+
+### Linear Regression
+```{r}
+model1
+```
+
+```{r}
+summary(model1)
+```
+
+```{r}
+confint(model1)
+```
+
+```{r}
+ggplot(olympic, aes(x = log(GDP), y = Total_Points)) + 
+  geom_point() +
+    geom_smooth(method = "lm")+
+  labs(x = "log(GDP)",
+       y = "Total Medal Points",
+       title = "Total Medal Points vs. log(GDP)")+
+  theme_bw()
+```
+
+### Analysis 2
+### Check assumptions
+
+#### 1. Linearity
+
+```{r}
+# 1. Linearity
+ggplot(olympic, aes(x = Atheletes, y = Total_Points)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+#### 2. Indepence
+
+Each country is independent of one another.We assume that all the number of Athletes and number of medals are independent.
+
+#### 3. Equal Variance
+
+```{r}
+model2 <- lm(Total_Points ~ Atheletes, data = olympic)
+
+plot(resid(model2) ~ fitted(model2), main = "Residuals vs. Fitted")  
+abline(h = 0, col = "red")
+```
+
+#### 4. Normality
+
+```{r}
+qqnorm(resid(model2))
+qqline(resid(model2), col = "red")
+```
+
+### Linear Regression
+```{r}
+model2
+```
+
+```{r}
+summary(model2)
+```
+
+```{r}
+confint(model2)
+```
+
+```{r}
+ggplot(olympic, aes(x = Atheletes, y = Total_Points)) + 
+  geom_point() +
+    geom_smooth(method = "lm")+
+  labs(x = "Atheletes",
+       y = "Total Medal Points",
+       title = "Total Medal Points vs. Atheletes")+
+  theme_bw()
+```
+```{r}
+olympic %>% 
+  ggplot(aes(x = loggdp, y = Total_Points, col=Atheletes, size=Atheletes)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
